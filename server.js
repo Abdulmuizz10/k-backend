@@ -22,13 +22,13 @@ app.use("/auth", authRoutes);
 app.use("/users", usersRoutes);
 
 //database initialization
-const port = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5000;
 const DATABASE_URL = process.env.MONGO_DB_URL;
 mongoose
   .connect(DATABASE_URL)
   .then(() =>
-    app.listen(PORT, () => console.log(`Server connected to port: ${port}`))
+    app.listen(PORT, () => console.log(`Server connected to port: ${PORT}`))
   )
   .catch((error) =>
-    console.log(`${error}Server is not connected to port: ${port}`)
+    console.log(`${error}Server is not connected to port: ${PORT}`)
   );
