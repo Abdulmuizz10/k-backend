@@ -1,4 +1,5 @@
 import UserModel from "../models/userModel.js";
+import bcrypt from "bcryptjs";
 
 const getUsers = async (req, res) => {
   try {
@@ -69,22 +70,31 @@ const getCurrentUserProfile = async (req, res) => {
 };
 
 const updateCurrentUserProfile = async (req, res) => {
-  const existingUser = UserModel.findById(req.user.id);
-  if (existingUser) {
-    try {
-      const user = await UserModel.findByIdAndUpdate(
-        existingUser._id,
-        existingUser,
-        {
-          new: true,
-        }
-      );
-      res.status(200).json({ user });
-    } catch (error) {
-      res.status(500).json({ message: error.message });
+  const userId = req.user.id;
+  const updatedProfile = req.body;
+
+  try {
+    if (updatedProfile.password) {
+      updatedProfile.password = await bcrypt.hash(updatedProfile.password, 12);
     }
-  } else {
-    res.status(404).json({ message: "user not found" });
+
+    const user = await UserModel.findByIdAndUpdate(userId, updatedProfile, {
+      new: true,
+      runValidators: true,
+    }).select("-password");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json({
+      id: user._id,
+      username: user.username,
+      email: user.email,
+      isAdmin: user.isAdmin,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };
 

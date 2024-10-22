@@ -16,6 +16,6 @@ router.put("/:id", verifyUser, authorizeAdmin, updateUser);
 router.get("/find/:id", verifyUser, findUser);
 router.delete("/:id", verifyUser, authorizeAdmin, deleteUser);
 router.get("/profile", verifyUser, getCurrentUserProfile);
-router.put("/update-profile", verifyUser, updateCurrentUserProfile);
+router.patch("/update_profile", verifyUser, updateCurrentUserProfile);
 
 export default router;

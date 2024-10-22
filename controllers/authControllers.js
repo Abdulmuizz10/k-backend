@@ -25,7 +25,7 @@ const signUp = async (req, res) => {
     });
 
     const token = jwt.sign(
-      { isAdmin: newUser.isAdmin, _id: newUser._id },
+      { isAdmin: newUser.isAdmin, id: newUser._id },
       process.env.SECRET_KEY,
       { expiresIn: "30d" }
     );
@@ -83,11 +83,13 @@ const googleSignIn = async (req, res) => {
     const { email } = response.data;
     let user = await UserModel.findOne({ email });
 
+    const hashedPassword = await bcrypt.hash(email, 12);
+
     if (!user) {
-      user = new UserModel({
+      user = await UserModel.create({
         username: email.split("@")[0],
         email: email,
-        password: email,
+        password: hashedPassword,
       });
 
       await user.save();
