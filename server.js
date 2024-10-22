@@ -23,7 +23,7 @@ app.use("/users", usersRoutes);
 
 //database initialization
 const port = process.env.PORT || 5000;
-const DATABASE_URL = process.env.LOCAL_URL;
+const DATABASE_URL = process.env.MONGO_DB_URL;
 mongoose
   .connect(DATABASE_URL)
   .then(() =>
