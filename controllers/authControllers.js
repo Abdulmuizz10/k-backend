@@ -9,7 +9,7 @@ const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 // Existing signUp and signIn functions...
 
 const signUp = async (req, res) => {
-  const { username, email, password } = req.body;
+  const { username, email, password, isAdmin } = req.body;
   try {
     const existingUser = await UserModel.findOne({ email });
     if (existingUser) {
@@ -22,6 +22,7 @@ const signUp = async (req, res) => {
       username,
       email,
       password: hashedPassword,
+      isAdmin,
     });
 
     const token = jwt.sign(
