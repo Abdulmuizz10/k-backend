@@ -7,6 +7,8 @@ import dotenv from "dotenv";
 //routes
 import authRoutes from "./routes/authRoutes.js";
 import usersRoutes from "./routes/usersRoutes.js";
+import productRoutes from "./routes/productRoutes.js";
+import orderRoutes from "./routes/orderRoutes.js";
 
 // express initialization
 const app = express();
@@ -20,6 +22,8 @@ app.use(cors());
 //routes declarations
 app.use("/auth", authRoutes);
 app.use("/users", usersRoutes);
+app.use("/products", productRoutes);
+app.use("/orders", orderRoutes);
 
 //database initialization
 const PORT = process.env.PORT || 5000;
