@@ -10,6 +10,7 @@ const reviewSchema = mongoose.Schema(
       required: false,
       ref: "UserModel",
     },
+    date: { type: Date, required: true },
   },
   { timestamps: true }
 );
