@@ -9,8 +9,12 @@ const userSchema = mongoose.Schema({
     unique: true,
     required: true,
   },
+  // googleId: { type: String, unique: true, sparse: true },
   password: {
     type: String,
+    // required: function () {
+    //   return !this.googleId;
+    // },
     required: true,
   },
   isAdmin: {

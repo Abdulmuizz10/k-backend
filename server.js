@@ -24,6 +24,7 @@ app.use("/auth", authRoutes);
 app.use("/users", usersRoutes);
 app.use("/products", productRoutes);
 app.use("/orders", orderRoutes);
+// app.use("/create-payment", paymentRoutes);
 
 //database initialization
 const PORT = process.env.PORT || 5000;
@@ -36,3 +37,5 @@ mongoose
   .catch((error) =>
     console.log(`${error}Server is not connected to port: ${PORT}`)
   );
+
+console.log(process.env.ACCESS_TOKEN);

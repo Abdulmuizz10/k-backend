@@ -13,7 +13,7 @@ import { verifyUser, authorizeAdmin } from "../middleware/verify.js";
 const router = express.Router();
 
 // Create a new order
-router.post("/", verifyUser, createOrderController);
+router.post("/", createOrderController);
 
 // Get all orders (Admin use)
 router.get("/", verifyUser, authorizeAdmin, getAllOrdersController);
@@ -30,6 +30,6 @@ router.put(
 );
 
 // Get orders for a specific user
-router.get("/orders", verifyUser, getOrdersByUserController);
+router.get("/profile/orders", verifyUser, getOrdersByUserController);
 
 export default router;
