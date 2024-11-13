@@ -11,6 +11,24 @@ const { paymentsApi } = new Client({
       : Environment.Sandbox,
 });
 
+// Helper function to convert BigInt values to strings in an object
+function convertBigIntToString(obj) {
+  if (typeof obj === "bigint") {
+    return obj.toString();
+  } else if (Array.isArray(obj)) {
+    return obj.map(convertBigIntToString);
+  } else if (typeof obj === "object" && obj !== null) {
+    return Object.fromEntries(
+      Object.entries(obj).map(([key, value]) => [
+        key,
+        convertBigIntToString(value),
+      ])
+    );
+  }
+  return obj;
+}
+
+// Create orders
 const createOrderController = async (req, res) => {
   try {
     const { sourceId, totalPrice, currency, orderedItems, email } = req.body;
@@ -24,7 +42,7 @@ const createOrderController = async (req, res) => {
       sourceId,
       amountMoney: {
         currency: currency || "GBP",
-        amount: Math.floor(totalPrice * 100),
+        amount: Math.floor(totalPrice * 100), // Use correct amount calculation
       },
       idempotencyKey: crypto.randomUUID(),
       locationId: process.env.SQUARE_LOCATION_ID,
@@ -32,11 +50,15 @@ const createOrderController = async (req, res) => {
 
     if (result) {
       try {
-        const orderData = { ...req.body, paymentResult: result };
-        const order = new OrderModel(orderData);
-
+        const order = new OrderModel(req.body);
         const savedOrder = await order.save();
-        res.status(201).json(savedOrder.toObject()); // Return a plain JS object
+
+        // Convert BigInt values in the result object to strings
+        const safeResult = convertBigIntToString(result);
+
+        res
+          .status(201)
+          .json({ ...savedOrder.toObject(), paymentResult: safeResult });
       } catch (error) {
         console.error("Error saving order:", error);
         res.status(500).json({ message: error.message });
