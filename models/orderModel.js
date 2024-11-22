@@ -10,7 +10,11 @@ const orderSchema = mongoose.Schema(
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },
     email: { type: String, required: true },
-    sourceId: { type: String, required: true },
+    country: { type: String, required: true },
+    cityAndRegion: { type: String, required: true },
+    phoneNumber: { type: String, required: true },
+    zipCode: { type: Number, required: true },
+    sourceId: { type: String, required: false },
     currency: { type: String, require: true },
     coupon: { type: String, required: false },
     orderedItems: [
@@ -27,24 +31,18 @@ const orderSchema = mongoose.Schema(
         size: { type: String, required: true },
       },
     ],
-    address: { type: String, required: true },
-    city: { type: String, required: true },
-    state: { type: String, required: true },
-    zipCode: { type: Number, required: true },
-    country: { type: String, required: true },
-
+    addressLineOne: { type: String, required: true },
+    addressLineTwo: { type: String, required: false },
     shippingPrice: {
       type: Number,
       required: true,
       default: 0.0,
     },
-
     totalPrice: {
       type: Number,
       required: true,
       default: 0.0,
     },
-
     paidAt: {
       type: Date,
       required: true,

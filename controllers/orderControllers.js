@@ -72,6 +72,18 @@ const createOrderController = async (req, res) => {
   }
 };
 
+const linkGuestOrdersController = async (req, res) => {
+  const { user, email } = req.body;
+  try {
+    await OrderModel.updateMany({ email }, { user });
+    res
+      .status(200)
+      .json({ message: "All your orders as guest are linked successfully!" });
+  } catch (error) {
+    res.status(500).json({ message: "Error linking guest orders", error });
+  }
+};
+
 // Get all orders (Admin use)
 const getAllOrdersController = async (req, res) => {
   try {
@@ -139,22 +151,43 @@ const updateOrderToDeliveredController = async (req, res) => {
 
 // Get orders for a specific user
 const getOrdersByUserController = async (req, res) => {
-  try {
-    const userId = req.user.id;
-    if (!userId) {
-      return res.status(400).json({ message: "User ID is missing or invalid" });
+  const userId = req.user.id;
+  if (userId) {
+    try {
+      const orders = await OrderModel.find({ user: userId }); // filter by user ID
+      res.status(200).json(orders);
+    } catch (error) {
+      res.status(500).json({ message: error.message });
     }
-    const orders = await OrderModel.find({ user: userId }); // filter by user ID
+  } else {
+    return res.status(400).json({ message: "User ID is missing or invalid" });
+  }
+};
+
+const getOrdersByGuestController = async (req, res) => {
+  const { guest } = req.query;
+  if (!guest) {
+    return res.status(400).json({ message: "Guest email is required" });
+  }
+  try {
+    const orders = await OrderModel.find({ email: guest });
+    if (!orders.length) {
+      return res
+        .status(404)
+        .json({ message: "No orders found for this email" });
+    }
     res.status(200).json(orders);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Error fetching orders", error });
   }
 };
 
 export {
   createOrderController,
+  linkGuestOrdersController,
   getAllOrdersController,
   getOrderByIdController,
   updateOrderToDeliveredController,
   getOrdersByUserController,
+  getOrdersByGuestController,
 };
