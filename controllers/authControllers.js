@@ -22,7 +22,6 @@ const signUp = async (req, res) => {
       firstName,
       lastName,
       email,
-      isAdmin: true,
       password: hashedPassword,
     });
 
