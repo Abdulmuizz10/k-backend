@@ -75,10 +75,13 @@ const createOrderController = async (req, res) => {
 const linkGuestOrdersController = async (req, res) => {
   const { user, email } = req.body;
   try {
+    if (!user || !email) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
     await OrderModel.updateMany({ email }, { user });
     res
       .status(200)
-      .json({ message: "All your orders as guest are linked successfully!" });
+      .json({ message: "All your orders are linked successfully!" });
   } catch (error) {
     res.status(500).json({ message: "Error linking guest orders", error });
   }

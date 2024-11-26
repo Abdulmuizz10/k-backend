@@ -9,7 +9,7 @@ const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 // Existing signUp and signIn functions...
 
 const signUp = async (req, res) => {
-  const { username, email, password } = req.body;
+  const { firstName, lastName, email, password } = req.body;
   try {
     const existingUser = await UserModel.findOne({ email });
     if (existingUser) {
@@ -19,8 +19,10 @@ const signUp = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 12);
 
     const newUser = await UserModel.create({
-      username,
+      firstName,
+      lastName,
       email,
+      isAdmin: true,
       password: hashedPassword,
     });
 
@@ -31,7 +33,8 @@ const signUp = async (req, res) => {
     );
     res.status(200).json({
       id: newUser._id,
-      username: newUser.username,
+      firstName: newUser.firstName,
+      lastName: newUser.lastName,
       email: newUser.email,
       isAdmin: newUser.isAdmin,
       isGuest: newUser.isGuest,
@@ -103,7 +106,8 @@ const signIn = async (req, res) => {
 
     res.status(200).json({
       id: existingUser._id,
-      username: existingUser.username,
+      firstName: existingUser.firstName,
+      lastName: existingUser.lastName,
       email: existingUser.email,
       isAdmin: existingUser.isAdmin,
       isGuest: existingUser.isGuest,
