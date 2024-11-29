@@ -3,6 +3,7 @@ import {
   createOrderController,
   linkGuestOrdersController,
   getAllOrdersController,
+  getOrdersByPage,
   getOrderByIdController,
   // updateOrderToPaidController,
   updateOrderToDeliveredController,
@@ -21,6 +22,9 @@ router.post("/linkguest/orders", linkGuestOrdersController);
 
 // Get all orders (Admin use)
 router.get("/", verifyUser, authorizeAdmin, getAllOrdersController);
+
+// Get orders by page
+router.get("/page/orders", verifyUser, authorizeAdmin, getOrdersByPage);
 
 // Get an order by ID
 router.get("/:id", verifyUser, authorizeAdmin, getOrderByIdController);

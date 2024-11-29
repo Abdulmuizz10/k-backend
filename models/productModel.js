@@ -61,8 +61,8 @@ const productSchema = new mongoose.Schema(
       default: false,
     },
     isAvailable: {
-      type: String,
-      required: true,
+      type: Boolean,
+      default: true,
     },
     gender: {
       type: String,

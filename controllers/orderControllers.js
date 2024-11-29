@@ -100,6 +100,22 @@ const getAllOrdersController = async (req, res) => {
   }
 };
 
+const getOrdersByPage = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = 20;
+    const skip = (page - 1) * limit;
+
+    const orders = await OrderModel.find().skip(skip).limit(limit);
+    const totalProducts = await OrderModel.countDocuments();
+    const totalPages = Math.ceil(totalProducts / limit);
+
+    res.status(200).json({ orders, totalPages });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 // Get an order by ID
 const getOrderByIdController = async (req, res) => {
   try {
@@ -189,6 +205,7 @@ export {
   createOrderController,
   linkGuestOrdersController,
   getAllOrdersController,
+  getOrdersByPage,
   getOrderByIdController,
   updateOrderToDeliveredController,
   getOrdersByUserController,

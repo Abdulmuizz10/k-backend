@@ -1,6 +1,7 @@
 import express from "express";
 import {
   getUsers,
+  getUsersByPage,
   findUser,
   updateUser,
   deleteUser,
@@ -12,6 +13,7 @@ import { verifyUser, authorizeAdmin } from "../middleware/verify.js";
 const router = express.Router();
 
 router.get("/", verifyUser, authorizeAdmin, getUsers);
+router.get("/page/users", verifyUser, authorizeAdmin, getUsersByPage);
 router.put("/:id", verifyUser, authorizeAdmin, updateUser);
 router.get("/find/:id", verifyUser, findUser);
 router.delete("/:id", verifyUser, authorizeAdmin, deleteUser);

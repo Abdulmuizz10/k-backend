@@ -21,6 +21,22 @@ const getAllProductsController = async (req, res) => {
   }
 };
 
+const getProductsByPage = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = 20;
+    const skip = (page - 1) * limit;
+
+    const products = await ProductModel.find().skip(skip).limit(limit);
+    const totalProducts = await ProductModel.countDocuments();
+    const totalPages = Math.ceil(totalProducts / limit);
+
+    res.status(200).json({ products, totalPages });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 // Get a single product by ID
 const getProductByIdController = async (req, res) => {
   try {
@@ -115,6 +131,7 @@ const addReviewController = async (req, res) => {
 export {
   createProductController,
   getAllProductsController,
+  getProductsByPage,
   getProductByIdController,
   updateProductController,
   deleteProductController,

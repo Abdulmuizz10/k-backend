@@ -10,6 +10,22 @@ const getUsers = async (req, res) => {
   }
 };
 
+const getUsersByPage = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = 20;
+    const skip = (page - 1) * limit;
+
+    const users = await UserModel.find().skip(skip).limit(limit);
+    const totalProducts = await UserModel.countDocuments();
+    const totalPages = Math.ceil(totalProducts / limit);
+
+    res.status(200).json({ users, totalPages });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 const findUser = async (req, res) => {
   const { id } = req.params;
   try {
@@ -100,6 +116,7 @@ const updateCurrentUserProfile = async (req, res) => {
 
 export {
   getUsers,
+  getUsersByPage,
   findUser,
   updateUser,
   deleteUser,

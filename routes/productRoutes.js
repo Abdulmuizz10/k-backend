@@ -2,6 +2,7 @@ import express from "express";
 import {
   createProductController,
   getAllProductsController,
+  getProductsByPage,
   getProductByIdController,
   updateProductController,
   deleteProductController,
@@ -14,6 +15,7 @@ const router = express.Router();
 
 router.post("/", verifyUser, authorizeAdmin, createProductController);
 router.get("/", getAllProductsController);
+router.get("/page/products", verifyUser, authorizeAdmin, getProductsByPage);
 router.get("/:id", getProductByIdController);
 router.put("/:id", verifyUser, authorizeAdmin, updateProductController);
 router.delete("/:id", verifyUser, authorizeAdmin, deleteProductController);
