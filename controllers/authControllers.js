@@ -9,7 +9,7 @@ const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 // Existing signUp and signIn functions...
 
 const signUp = async (req, res) => {
-  const { firstName, lastName, email, password, isGuest } = req.body;
+  const { firstName, lastName, email, password } = req.body;
   try {
     const existingUser = await UserModel.findOne({ email });
     if (existingUser) {
@@ -22,7 +22,7 @@ const signUp = async (req, res) => {
       firstName,
       lastName,
       email,
-      isGuest,
+      authMethod: "password",
       password: hashedPassword,
     });
 
@@ -37,7 +37,6 @@ const signUp = async (req, res) => {
       lastName: newUser.lastName,
       email: newUser.email,
       isAdmin: newUser.isAdmin,
-      isGuest: newUser.isGuest,
       squareCustomerId: newUser.squareCustomerId,
       savedCards: newUser.savedCards,
       token,
@@ -110,7 +109,6 @@ const signIn = async (req, res) => {
       lastName: existingUser.lastName,
       email: existingUser.email,
       isAdmin: existingUser.isAdmin,
-      isGuest: existingUser.isGuest,
       squareCustomerId: existingUser.squareCustomerId,
       savedCards: existingUser.savedCards,
       token,
@@ -126,38 +124,45 @@ const googleSignIn = async (req, res) => {
   const { googleToken } = req.body;
 
   try {
-    // Use the access token to get the ID token and other info from Google
     const response = await axios.get(
-      `https://www.googleapis.com/oauth2/v3/tokeninfo?access_token=${googleToken}`
+      "https://www.googleapis.com/oauth2/v2/userinfo",
+      {
+        headers: {
+          Authorization: `Bearer ${googleToken}`,
+        },
+      }
     );
-    const { email } = response.data;
-    let user = await UserModel.findOne({ email });
 
-    const hashedPassword = await bcrypt.hash(email, 12);
+    const {
+      email,
+      given_name: firstName,
+      family_name: lastName,
+    } = response.data;
+
+    let user = await UserModel.findOne({ email });
 
     if (!user) {
       user = await UserModel.create({
-        username: email.split("@")[0],
-        email: email,
-        password: hashedPassword,
+        firstName,
+        lastName,
+        email,
+        authMethod: "google",
       });
-
-      await user.save();
     }
 
     // Generate a JWT for your app
     const token = jwt.sign(
-      { isAdmin: user.isAdmin, id: user._id },
+      { id: user._id, isAdmin: user.isAdmin },
       process.env.SECRET_KEY,
       { expiresIn: "30d" }
     );
 
     return res.status(200).json({
       id: user._id,
-      username: user.username,
+      firstName: user.firstName,
+      lastName: user.lastName,
       email: user.email,
       isAdmin: user.isAdmin,
-      isGuest: user.isGuest,
       squareCustomerId: user.squareCustomerId,
       savedCards: user.savedCards,
       token,

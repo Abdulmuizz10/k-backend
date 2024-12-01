@@ -1,6 +1,7 @@
 import OrderModel from "../models/orderModel.js";
 import { Client, Environment } from "square";
 import crypto from "crypto";
+import userModel from "../models/userModel.js";
 
 const { paymentsApi } = new Client({
   accessToken:
@@ -75,13 +76,13 @@ const createOrderController = async (req, res) => {
 const linkGuestOrdersController = async (req, res) => {
   const { user, email } = req.body;
   try {
-    if (!user || !email) {
-      return res.status(400).json({ message: "Missing required fields" });
+    const existingOrder = await userModel.findOne({ email: email });
+    if (existingOrder) {
+      await OrderModel.updateMany({ email }, { user });
+      res
+        .status(200)
+        .json({ message: "All your orders are linked successfully!" });
     }
-    await OrderModel.updateMany({ email }, { user });
-    res
-      .status(200)
-      .json({ message: "All your orders are linked successfully!" });
   } catch (error) {
     res.status(500).json({ message: "Error linking guest orders", error });
   }

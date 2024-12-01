@@ -45,15 +45,11 @@ const userSchema = new mongoose.Schema(
   {
     firstName: {
       type: String,
-      required: function () {
-        return !this.isGuest; // Username is required only for registered users
-      },
+      required: true,
     },
     lastName: {
       type: String,
-      required: function () {
-        return !this.isGuest; // Username is required only for registered users
-      },
+      required: true,
     },
     email: {
       type: String,
@@ -64,7 +60,7 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       required: function () {
-        return !this.isGuest; // Password is required only for registered users
+        return this.authMethod === "password"; // Required only for password-based users
       },
       select: false, // Exclude password from queries by default for security
     },
@@ -73,9 +69,11 @@ const userSchema = new mongoose.Schema(
       default: false,
       required: true,
     },
-    isGuest: {
-      type: Boolean,
-      default: true, // Differentiates between guests and registered users
+
+    authMethod: {
+      type: String,
+      enum: ["password", "google"], // Define possible authentication methods
+      default: "password",
     },
     squareCustomerId: {
       type: String,
