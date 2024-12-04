@@ -3,6 +3,7 @@ import UserModel from "../models/userModel.js";
 import bcrypt from "bcryptjs";
 import { OAuth2Client } from "google-auth-library";
 import axios from "axios";
+import { sendResetEmailLink } from "../lib/utils.js";
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -94,7 +95,7 @@ const signIn = async (req, res) => {
       existingUser.password
     );
     if (!isPasswordCorrect) {
-      return res.status(400).json({ message: "Incorrect password" });
+      return res.status(400).json({ message: "Incorrect password or Email" });
     }
 
     const token = jwt.sign(
@@ -173,4 +174,49 @@ const googleSignIn = async (req, res) => {
   }
 };
 
-export { signUp, signIn, googleSignIn };
+const forgotPassword = async (req, res) => {
+  const { email } = req.body;
+  try {
+    const user = await UserModel.findOne({ email });
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const resetToken = jwt.sign({ id: user._id }, process.env.SECRET_KEY, {
+      expiresIn: "1h",
+    });
+
+    const resetUrl = `${process.env.FRONTEND_URL}/auth/reset_password/${resetToken}`;
+    const message = `Click here to reset your password: ${resetUrl}`;
+
+    await sendResetEmailLink({
+      email: user.email,
+      subject: "Password Reset",
+      message,
+    });
+
+    res.json({ message: "Reset link sent to your email" });
+  } catch (error) {
+    res.status(500).json({ message: "An error occurred" });
+  }
+};
+
+const resetPassword = async (req, res) => {
+  const { token } = req.params;
+  const { newPassword } = req.body;
+
+  try {
+    const decoded = jwt.verify(token, process.env.SECRET_KEY);
+    const user = await UserModel.findById(decoded.id);
+
+    if (!user) {
+      res.status(404).json({ message: "Invalid or expired token" });
+    }
+
+    user.password = await bcrypt.hash(newPassword, 12);
+    await user.save();
+    res.json({ message: "Password reset successful" });
+  } catch (error) {
+    res.status(500).json({ message: "Invalid or expired token" });
+  }
+};
+
+export { signUp, signIn, googleSignIn, forgotPassword, resetPassword };

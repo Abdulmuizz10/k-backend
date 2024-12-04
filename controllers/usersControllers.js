@@ -41,15 +41,14 @@ const findUser = async (req, res) => {
 
 const updateUser = async (req, res) => {
   const { id } = req.params;
-  const existingUser = req.body;
   try {
-    const user = await UserModel.findByIdAndUpdate(id, existingUser, {
+    const newUser = await UserModel.findByIdAndUpdate(id, req.body, {
       new: true,
     });
-    res.status(200).json({ user });
     if (!user) {
       res.status(404).json({ message: "User not found" });
     }
+    res.status(200).json({ newUser });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -76,9 +75,12 @@ const getCurrentUserProfile = async (req, res) => {
     }
     res.status(200).json({
       id: user._id,
-      username: user.username,
+      firstName: user.firstName,
+      lastName: user.lastName,
       email: user.email,
       isAdmin: user.isAdmin,
+      squareCustomerId: user.squareCustomerId,
+      savedCards: user.savedCards,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -105,9 +107,12 @@ const updateCurrentUserProfile = async (req, res) => {
 
     res.status(200).json({
       id: user._id,
-      username: user.username,
+      firstName: user.firstName,
+      lastName: user.lastName,
       email: user.email,
       isAdmin: user.isAdmin,
+      squareCustomerId: user.squareCustomerId,
+      savedCards: user.savedCards,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
