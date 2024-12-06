@@ -5,7 +5,7 @@ const createProductController = async (req, res) => {
   try {
     const product = new ProductModel(req.body);
     const savedProduct = await product.save();
-    res.status(201).json(savedProduct);
+    res.status(200).json(savedProduct);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -86,7 +86,7 @@ const addReviewController = async (req, res) => {
     product.reviews.push(req.body);
     const updatedProduct = await product.save();
 
-    res.status(201).json(updatedProduct);
+    res.status(200).json(updatedProduct);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

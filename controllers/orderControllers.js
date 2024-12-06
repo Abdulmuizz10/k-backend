@@ -32,10 +32,32 @@ function convertBigIntToString(obj) {
 // Create orders
 const createOrderController = async (req, res) => {
   try {
-    const { sourceId, totalPrice, currency, orderedItems, email } = req.body;
+    const {
+      sourceId,
+      totalPrice,
+      currency,
+      orderedItems,
+      firstName,
+      lastName,
+      email,
+      country,
+      cityAndRegion,
+      zipCode,
+    } = req.body;
 
     // Basic field validation
-    if (!sourceId || !totalPrice || !currency || !orderedItems || !email) {
+    if (
+      !sourceId ||
+      !totalPrice ||
+      !currency ||
+      !orderedItems ||
+      !firstName ||
+      !lastName ||
+      !email ||
+      !country ||
+      !cityAndRegion ||
+      !zipCode
+    ) {
       return res.status(400).json({ message: "Required fields are missing." });
     }
 
@@ -58,18 +80,17 @@ const createOrderController = async (req, res) => {
         const safeResult = convertBigIntToString(result);
 
         res
-          .status(201)
+          .status(200)
           .json({ ...savedOrder.toObject(), paymentResult: safeResult });
       } catch (error) {
-        console.error("Error saving order:", error);
-        res.status(500).json({ message: error.message });
+        res.status(400).json({ message: error.message });
       }
     } else {
-      res.status(500).json({ message: "Payment result is invalid." });
+      res.status(400).json({ message: "Payment result is invalid." });
     }
   } catch (error) {
     console.error("Error creating payment:", error);
-    res.status(500).json({ message: error.message });
+    res.status(400).json({ message: error.message });
   }
 };
 
@@ -107,7 +128,11 @@ const getOrdersByPage = async (req, res) => {
     const limit = 20;
     const skip = (page - 1) * limit;
 
-    const orders = await OrderModel.find().skip(skip).limit(limit);
+    const orders = await OrderModel.find()
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
     const totalProducts = await OrderModel.countDocuments();
     const totalPages = Math.ceil(totalProducts / limit);
 
