@@ -4,6 +4,7 @@ import crypto from "crypto";
 import nodemailer from "nodemailer";
 import userModel from "../models/userModel.js";
 import dotenv from "dotenv";
+import { formatAmount } from "../lib/utils.js";
 
 dotenv.config();
 
@@ -102,13 +103,19 @@ const createOrderController = async (req, res) => {
             <p>Thank you for your order. Here are the details:</p>
             <ul>
               <li><strong>Order ID:</strong> ${savedOrder._id}</li>
-              <li><strong>Total Price:</strong> ${totalPrice} ${currency}</li>
+              <li><strong>Total Price:</strong> ${formatAmount(
+                totalPrice,
+                currency
+              )}</li>
               <li><strong>Ordered Items:</strong></li>
               <ul>
                 ${orderedItems
                   .map(
                     (item) =>
-                      `<li>${item.name} x${item.quantity} - ${item.price} ${currency}</li>`
+                      `<li>${item.name} x${item.quantity} - ${formatAmount(
+                        item.price,
+                        currency
+                      )}</li>`
                   )
                   .join("")}
               </ul>
