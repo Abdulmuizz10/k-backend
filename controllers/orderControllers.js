@@ -1,7 +1,11 @@
 import OrderModel from "../models/orderModel.js";
 import { Client, Environment } from "square";
 import crypto from "crypto";
+import nodemailer from "nodemailer";
 import userModel from "../models/userModel.js";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const { paymentsApi } = new Client({
   accessToken:
@@ -12,7 +16,6 @@ const { paymentsApi } = new Client({
       : Environment.Sandbox,
 });
 
-// Helper function to convert BigInt values to strings in an object
 function convertBigIntToString(obj) {
   if (typeof obj === "bigint") {
     return obj.toString();
@@ -29,7 +32,18 @@ function convertBigIntToString(obj) {
   return obj;
 }
 
-// Create orders
+// Configure Nodemailer
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL,
+    pass: process.env.EMAIL_PASSWORD,
+  },
+  tls: {
+    rejectUnauthorized: false,
+  },
+});
+
 const createOrderController = async (req, res) => {
   try {
     const {
@@ -45,7 +59,6 @@ const createOrderController = async (req, res) => {
       zipCode,
     } = req.body;
 
-    // Basic field validation
     if (
       !sourceId ||
       !totalPrice ||
@@ -65,7 +78,7 @@ const createOrderController = async (req, res) => {
       sourceId,
       amountMoney: {
         currency: currency || "GBP",
-        amount: Math.floor(totalPrice * 100), // Use correct amount calculation
+        amount: Math.floor(totalPrice * 100),
       },
       idempotencyKey: crypto.randomUUID(),
       locationId: process.env.SQUARE_LOCATION_ID,
@@ -76,8 +89,35 @@ const createOrderController = async (req, res) => {
         const order = new OrderModel(req.body);
         const savedOrder = await order.save();
 
-        // Convert BigInt values in the result object to strings
         const safeResult = convertBigIntToString(result);
+
+        // Send confirmation email
+        const mailOptions = {
+          from: process.env.EMAIL_USER,
+          to: email,
+          subject: "Order Confirmation",
+          html: `
+            <h1>Order Confirmation</h1>
+            <p>Dear ${firstName} ${lastName},</p>
+            <p>Thank you for your order. Here are the details:</p>
+            <ul>
+              <li><strong>Order ID:</strong> ${savedOrder._id}</li>
+              <li><strong>Total Price:</strong> ${totalPrice} ${currency}</li>
+              <li><strong>Ordered Items:</strong></li>
+              <ul>
+                ${orderedItems
+                  .map(
+                    (item) =>
+                      `<li>${item.name} x${item.quantity} - ${item.price} ${currency}</li>`
+                  )
+                  .join("")}
+              </ul>
+            </ul>
+            <p>We will notify you once your order has been shipped.</p>
+          `,
+        };
+
+        await transporter.sendMail(mailOptions);
 
         res
           .status(200)
@@ -89,7 +129,6 @@ const createOrderController = async (req, res) => {
       res.status(400).json({ message: "Payment result is invalid." });
     }
   } catch (error) {
-    console.error("Error creating payment:", error);
     res.status(400).json({ message: error.message });
   }
 };
