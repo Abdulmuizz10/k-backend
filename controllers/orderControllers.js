@@ -112,10 +112,9 @@ const createOrderController = async (req, res) => {
                 ${orderedItems
                   .map(
                     (item) =>
-                      `<li>${item.name} x ${item.qty} - ${formatAmount(
-                        item.price,
-                        currency
-                      )}</li>`
+                      `<li>${item.name} x ${item.qty} x (${
+                        item.size
+                      }) - ${formatAmount(item.price, currency)}</li>`
                   )
                   .join("")}
               </ul>
