@@ -16,7 +16,10 @@ const getUsersByPage = async (req, res) => {
     const limit = 20;
     const skip = (page - 1) * limit;
 
-    const users = await UserModel.find().skip(skip).limit(limit);
+    const users = await UserModel.find()
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
     const totalProducts = await UserModel.countDocuments();
     const totalPages = Math.ceil(totalProducts / limit);
 

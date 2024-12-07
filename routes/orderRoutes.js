@@ -30,7 +30,7 @@ router.get("/page/orders", verifyUser, authorizeAdmin, getOrdersByPage);
 router.get("/:id", verifyUser, authorizeAdmin, getOrderByIdController);
 
 // Update order to delivered
-router.put(
+router.patch(
   "/:id/deliver",
   verifyUser,
   authorizeAdmin,
