@@ -262,7 +262,9 @@ const getOrdersByUserController = async (req, res) => {
   const userId = req.user.id;
   if (userId) {
     try {
-      const orders = await OrderModel.find({ user: userId }); // filter by user ID
+      const orders = await OrderModel.find({ user: userId }).sort({
+        createdAt: -1,
+      }); // filter by user ID
       res.status(200).json(orders);
     } catch (error) {
       res.status(500).json({ message: error.message });
@@ -278,7 +280,9 @@ const getOrdersByGuestController = async (req, res) => {
     return res.status(400).json({ message: "Guest email is required" });
   }
   try {
-    const orders = await OrderModel.find({ email: guest });
+    const orders = await OrderModel.find({ email: guest }).sort({
+      createdAt: -1,
+    });
     if (!orders.length) {
       return res
         .status(404)
