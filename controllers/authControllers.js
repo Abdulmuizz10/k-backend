@@ -3,12 +3,11 @@ import UserModel from "../models/userModel.js";
 import bcrypt from "bcryptjs";
 import { OAuth2Client } from "google-auth-library";
 import axios from "axios";
-import { sendResetEmailLink } from "../lib/utils.js";
+import { sendResetEmailLink, sendWelcomeEmail } from "../lib/utils.js";
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // Existing signUp and signIn functions...
-
 const signUp = async (req, res) => {
   const { firstName, lastName, email, password } = req.body;
   try {
@@ -27,11 +26,15 @@ const signUp = async (req, res) => {
       password: hashedPassword,
     });
 
+    // Send welcome email
+    await sendWelcomeEmail(email, firstName);
+
     const token = jwt.sign(
       { isAdmin: newUser.isAdmin, id: newUser._id },
       process.env.SECRET_KEY,
       { expiresIn: "30d" }
     );
+
     res.status(200).json({
       id: newUser._id,
       firstName: newUser.firstName,
@@ -149,6 +152,9 @@ const googleSignIn = async (req, res) => {
         email,
         authMethod: "google",
       });
+
+      // Send welcome email
+      await sendWelcomeEmail(email, firstName);
     }
 
     // Generate a JWT for your app

@@ -27,7 +27,10 @@ const getProductsByPage = async (req, res) => {
     const limit = 20;
     const skip = (page - 1) * limit;
 
-    const products = await ProductModel.find().skip(skip).limit(limit);
+    const products = await ProductModel.find()
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
     const totalProducts = await ProductModel.countDocuments();
     const totalPages = Math.ceil(totalProducts / limit);
 
@@ -128,6 +131,108 @@ const addReviewController = async (req, res) => {
 //   }
 // };
 
+const getBestSellerProducts = async (req, res) => {
+  try {
+    const products = await ProductModel.find({ bestSeller: true });
+    res.status(200).json(products);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const getNewArrivalProducts = async (req, res) => {
+  try {
+    const products = await ProductModel.find({ newArrival: true });
+    res.status(200).json(products);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const getActiveWearProducts = async (req, res) => {
+  try {
+    const products = await ProductModel.find({ category: "Active Wear" });
+    res.status(200).json(products);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const getFitnessAccessoriesProducts = async (req, res) => {
+  try {
+    const products = await ProductModel.find({
+      category: "Fitness Accessories",
+    });
+    res.status(200).json(products);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const updateProductToBestSeller = async (req, res) => {
+  let { status } = req.body;
+
+  // Convert the 'status' string to a boolean
+  if (status === "isBestSeller") {
+    status = true;
+  } else if (status === "notBestSeller") {
+    status = false;
+  } else {
+    return res.status(400).json({ message: "Invalid status value" });
+  }
+
+  try {
+    const product = await ProductModel.findById(req.params.id);
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    // Update the order delivery status
+    product.bestSeller = status;
+    await product.save();
+
+    // Respond with an appropriate message
+    const message = status
+      ? "Product updated to best seller"
+      : "Product updated to non best seller";
+    res.status(200).json({ message });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const updateProductToNewArrival = async (req, res) => {
+  let { status } = req.body;
+
+  // Convert the 'status' string to a boolean
+  if (status === "isNewArrival") {
+    status = true;
+  } else if (status === "notNewArrival") {
+    status = false;
+  } else {
+    return res.status(400).json({ message: "Invalid status value" });
+  }
+
+  try {
+    const product = await ProductModel.findById(req.params.id);
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    // Update the order delivery status
+    product.newArrival = status;
+    await product.save();
+
+    // Respond with an appropriate message
+    const message = status
+      ? "Product updated to new arrival"
+      : "Product updated to not new arrival";
+    res.status(200).json({ message });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 export {
   createProductController,
   getAllProductsController,
@@ -136,4 +241,10 @@ export {
   updateProductController,
   deleteProductController,
   addReviewController,
+  getBestSellerProducts,
+  getNewArrivalProducts,
+  getActiveWearProducts,
+  getFitnessAccessoriesProducts,
+  updateProductToBestSeller,
+  updateProductToNewArrival,
 };

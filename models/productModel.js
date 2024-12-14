@@ -10,7 +10,7 @@ const reviewSchema = mongoose.Schema(
       required: false,
       ref: "UserModel",
     },
-    date: { type: Date, required: true },
+    date: { type: Date, required: false },
   },
   { timestamps: true }
 );
@@ -52,12 +52,12 @@ const productSchema = new mongoose.Schema(
     reviews: [reviewSchema],
     newArrival: {
       type: Boolean,
-      required: true,
+      required: false,
       default: false,
     },
     bestSeller: {
       type: Boolean,
-      required: true,
+      required: false,
       default: false,
     },
     isAvailable: {
