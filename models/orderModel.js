@@ -13,7 +13,7 @@ const orderSchema = mongoose.Schema(
     country: { type: String, required: true },
     cityAndRegion: { type: String, required: true },
     phoneNumber: { type: String, required: true },
-    zipCode: { type: Number, required: true },
+    zipCode: { type: String, required: true },
     sourceId: { type: String, required: false },
     currency: { type: String, require: true },
     coupon: { type: String, required: false },
