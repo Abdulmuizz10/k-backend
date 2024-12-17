@@ -230,10 +230,11 @@ const getDeliveredOrders = async (req, res) => {
 // Get an order by ID
 const getOrderByIdController = async (req, res) => {
   try {
-    const order = await OrderModel.findById(req.params.id).populate(
-      "user",
-      "firstName lastName email"
-    );
+    // const order = await OrderModel.findById(req.params.id).populate(
+    //   "user",
+    //   "firstName lastName email"
+    // );
+    const order = await OrderModel.findById(req.params.id);
     if (!order) return res.status(404).json({ message: "Order not found" });
     res.status(200).json(order);
   } catch (error) {
