@@ -49,9 +49,10 @@ const orderSchema = mongoose.Schema(
     },
 
     isDelivered: {
-      type: Boolean,
+      type: String,
       required: false,
-      default: false,
+      enum: ["Pending", "Processing", "Shipped", "Delivered"],
+      default: "Pending",
     },
 
     deliveredAt: {

@@ -8,7 +8,7 @@ import {
   getDeliveredOrders,
   getOrderByIdController,
   // updateOrderToPaidController,
-  updateOrderToDeliveredController,
+  updateOrderStatusController,
   getOrdersByUserController,
   getOrdersByGuestController,
 } from "../controllers/orderControllers.js";
@@ -39,7 +39,7 @@ router.patch(
   "/:id/deliver",
   verifyUser,
   authorizeAdmin,
-  updateOrderToDeliveredController
+  updateOrderStatusController
 );
 
 // Get orders for a specific user

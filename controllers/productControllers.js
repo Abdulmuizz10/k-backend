@@ -41,13 +41,39 @@ const getProductsByPage = async (req, res) => {
 };
 
 // Get a single product by ID
+// const getProductByIdController = async (req, res) => {
+//   try {
+//     const product = await ProductModel.findById(req.params.id);
+//     if (!product) return res.status(404).json({ message: "Product not found" });
+//     res.status(200).json(product);
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// };
+
 const getProductByIdController = async (req, res) => {
   try {
     const product = await ProductModel.findById(req.params.id);
-    if (!product) return res.status(404).json({ message: "Product not found" });
-    res.status(200).json(product);
+
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    // Calculate total stars, average rating, and total reviews
+    const totalStars = product.reviews.reduce(
+      (sum, review) => sum + (review.rating || 0),
+      0
+    );
+    const totalReviews = product.reviews.length;
+    const averageRating = totalReviews > 0 ? totalStars / totalReviews : 0;
+
+    res.status(200).json({
+      product,
+      averageRating: averageRating.toFixed(2), // Round to 2 decimal places
+      totalReviews,
+    });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
@@ -133,7 +159,9 @@ const addReviewController = async (req, res) => {
 
 const getBestSellerProducts = async (req, res) => {
   try {
-    const products = await ProductModel.find({ bestSeller: true });
+    const products = await ProductModel.find({ bestSeller: true }).sort({
+      createdAt: -1,
+    });
     res.status(200).json(products);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -142,7 +170,9 @@ const getBestSellerProducts = async (req, res) => {
 
 const getNewArrivalProducts = async (req, res) => {
   try {
-    const products = await ProductModel.find({ newArrival: true });
+    const products = await ProductModel.find({ newArrival: true }).sort({
+      createdAt: -1,
+    });
     res.status(200).json(products);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -151,7 +181,9 @@ const getNewArrivalProducts = async (req, res) => {
 
 const getActiveWearProducts = async (req, res) => {
   try {
-    const products = await ProductModel.find({ category: "Active Wear" });
+    const products = await ProductModel.find({ category: "Active Wear" }).sort({
+      createdAt: -1,
+    });
     res.status(200).json(products);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -162,7 +194,7 @@ const getFitnessAccessoriesProducts = async (req, res) => {
   try {
     const products = await ProductModel.find({
       category: "Fitness Accessories",
-    });
+    }).sort({ createdAt: -1 });
     res.status(200).json(products);
   } catch (error) {
     res.status(500).json({ message: error.message });

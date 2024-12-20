@@ -193,14 +193,14 @@ const getPendingOrders = async (req, res) => {
     const limit = 20;
     const skip = (page - 1) * limit;
 
-    const orders = await OrderModel.find({ isDelivered: false })
+    const orders = await OrderModel.find({ isDelivered: { $ne: "Delivered" } }) // Use $ne (not equal) operator to exclude 'Delivered' orders
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
-
-    const totalProducts = await OrderModel.countDocuments();
+    const totalProducts = await OrderModel.countDocuments({
+      isDelivered: { $ne: "Delivered" },
+    }); // Count documents excluding 'Delivered' orders
     const totalPages = Math.ceil(totalProducts / limit);
-
     res.status(200).json({ orders, totalPages });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -212,15 +212,15 @@ const getDeliveredOrders = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = 20;
     const skip = (page - 1) * limit;
-
-    const orders = await OrderModel.find({ isDelivered: true })
+    const orders = await OrderModel.find({ isDelivered: "Delivered" })
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
 
-    const totalProducts = await OrderModel.countDocuments();
+    const totalProducts = await OrderModel.countDocuments({
+      isDelivered: "Delivered",
+    });
     const totalPages = Math.ceil(totalProducts / limit);
-
     res.status(200).json({ orders, totalPages });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -265,36 +265,39 @@ const getOrderByIdController = async (req, res) => {
 // };
 
 // Update order to delivered
-const updateOrderToDeliveredController = async (req, res) => {
-  let { status } = req.body;
+const updateOrderStatusController = async (req, res) => {
+  const { status } = req.body; // Get the status from the request body
 
-  // Convert the 'status' string to a boolean
-  if (status === "true") {
-    status = true;
-  } else if (status === "false") {
-    status = false;
-  } else {
+  // Validate the status against the allowed enum values
+  const validStatuses = ["Pending", "Processing", "Shipped", "Delivered"];
+  if (!validStatuses.includes(status)) {
     return res.status(400).json({ message: "Invalid status value" });
   }
 
   try {
+    // Find the order by ID
     const order = await OrderModel.findById(req.params.id);
     if (!order) {
       return res.status(404).json({ message: "Order not found" });
     }
 
-    // Update the order delivery status
+    // Update the order status
     order.isDelivered = status;
-    order.deliveredAt = status ? new Date() : null;
+
+    // Update the `deliveredAt` field only if status is "Delivered"
+    if (status === "Delivered") {
+      order.deliveredAt = new Date();
+    } else {
+      order.deliveredAt = null;
+    }
+
+    // Save the updated order
     await order.save();
 
-    // Respond with an appropriate message
-    const message = status
-      ? "Order status updated to delivered"
-      : "Order status updated to not delivered";
-    res.status(200).json({ message });
+    res.status(200).json({ message: `Order status updated to ${status}` });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Error updating order status:", error);
+    res.status(500).json({ message: "Failed to update order status" });
   }
 };
 
@@ -343,7 +346,7 @@ export {
   getPendingOrders,
   getDeliveredOrders,
   getOrderByIdController,
-  updateOrderToDeliveredController,
+  updateOrderStatusController,
   getOrdersByUserController,
   getOrdersByGuestController,
 };
