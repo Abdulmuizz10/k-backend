@@ -29,6 +29,7 @@ const orderSchema = mongoose.Schema(
           ref: "ProductModel",
         },
         size: { type: String, required: true },
+        color: { type: String, required: true },
       },
     ],
     addressLineOne: { type: String, required: true },

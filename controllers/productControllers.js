@@ -69,7 +69,7 @@ const getProductByIdController = async (req, res) => {
 
     res.status(200).json({
       product,
-      averageRating: averageRating.toFixed(2), // Round to 2 decimal places
+      averageRating: averageRating.toFixed(1), // Round to 2 decimal places
       totalReviews,
     });
   } catch (error) {

@@ -41,12 +41,12 @@ const productSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
-    size: {
+    sizes: {
       type: [String],
       required: true,
     },
-    color: {
-      type: String,
+    colors: {
+      type: [String],
       required: true,
     },
     reviews: [reviewSchema],

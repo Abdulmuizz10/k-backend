@@ -1,10 +1,9 @@
 import OrderModel from "../models/orderModel.js";
 import { Client, Environment } from "square";
 import crypto from "crypto";
-import nodemailer from "nodemailer";
 import userModel from "../models/userModel.js";
 import dotenv from "dotenv";
-import { formatAmount } from "../lib/utils.js";
+import { sendOrderConfirmationEmail } from "../lib/utils.js";
 
 dotenv.config();
 
@@ -32,18 +31,6 @@ function convertBigIntToString(obj) {
   }
   return obj;
 }
-
-// Configure Nodemailer
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL,
-    pass: process.env.EMAIL_PASSWORD,
-  },
-  tls: {
-    rejectUnauthorized: false,
-  },
-});
 
 const createOrderController = async (req, res) => {
   try {
@@ -92,38 +79,16 @@ const createOrderController = async (req, res) => {
 
         const safeResult = convertBigIntToString(result);
 
-        // Send confirmation email
-        const mailOptions = {
-          from: process.env.EMAIL_USER,
-          to: email,
-          subject: "Order Confirmation",
-          html: `
-            <h1>Order Confirmation</h1>
-            <p>Dear ${firstName} ${lastName},</p>
-            <p>Thank you for your order. Here are the details:</p>
-            <ul>
-              <li><strong>Order ID:</strong> ${savedOrder._id}</li>
-              <li><strong>Total Price:</strong> ${formatAmount(
-                totalPrice,
-                currency
-              )}</li>
-              <li><strong>Ordered Items:</strong></li>
-              <ul>
-                ${orderedItems
-                  .map(
-                    (item) =>
-                      `<li>${item.qty} x ${item.name} (${
-                        item.size
-                      }) - ${formatAmount(item.price, currency)}</li>`
-                  )
-                  .join("")}
-              </ul>
-            </ul>
-            <p>We will notify you once your order has been shipped.</p>
-          `,
-        };
-
-        await transporter.sendMail(mailOptions);
+        // Send confirmation email via utility function
+        await sendOrderConfirmationEmail(
+          email,
+          firstName,
+          lastName,
+          totalPrice,
+          currency,
+          orderedItems,
+          savedOrder._id
+        );
 
         res
           .status(200)
