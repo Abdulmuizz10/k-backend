@@ -4,6 +4,9 @@ import {
   getAllProductsController,
   getProductsByPage,
   getProductByIdController,
+  getCollections,
+  searchProductsWithSuggestions,
+  getProductsSearchResults,
   updateProductController,
   deleteProductController,
   addReviewController,
@@ -21,6 +24,9 @@ const router = express.Router();
 
 router.post("/", verifyUser, authorizeAdmin, createProductController);
 router.get("/", getAllProductsController);
+router.get("/collections", getCollections);
+router.get("/suggestions", searchProductsWithSuggestions);
+router.get("/search-results", getProductsSearchResults);
 router.get("/best-sellers", getBestSellerProducts);
 router.get("/new-arrivals", getNewArrivalProducts);
 router.get("/active-wears", getActiveWearProducts);

@@ -77,6 +77,68 @@ const getProductByIdController = async (req, res) => {
   }
 };
 
+const getCollections = async (req, res) => {
+  try {
+    const products = await ProductModel.aggregate([{ $sample: { size: 12 } }]);
+
+    res.status(200).json(products);
+  } catch (error) {
+    console.error("Error fetching random products:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch random products.",
+      error: error.message,
+    });
+  }
+};
+
+const searchProductsWithSuggestions = async (req, res) => {
+  try {
+    const { query } = req.query;
+
+    if (!query) {
+      return res.status(400).json({ message: "Search query is required" });
+    }
+
+    const searchRegex = new RegExp(query, "i");
+
+    // Query the database for matching products
+    const products = await ProductModel.find({
+      $or: [{ name: searchRegex }, { category: searchRegex }],
+    }).limit(9);
+
+    const suggestions = [
+      ...new Set(products.map((product) => product.name)),
+    ].slice(0, 7);
+
+    res.status(200).json({ products, suggestions });
+  } catch (error) {
+    res.status(500).json({ message: "Server error. Please try again later." });
+  }
+};
+
+const getProductsSearchResults = async (req, res) => {
+  try {
+    const { query } = req.query;
+
+    if (!query) {
+      return res.status(400).json({ message: "Search query is required" });
+    }
+    const nameRegex = new RegExp(query, "i");
+    const products = await ProductModel.find({ name: nameRegex });
+
+    if (products.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No products found with a similar name" });
+    }
+
+    res.status(200).json(products);
+  } catch (error) {
+    res.status(500).json({ message: "Server error. Please refresh the page." });
+  }
+};
+
 // Update a product by ID
 const updateProductController = async (req, res) => {
   try {
@@ -270,6 +332,9 @@ export {
   getAllProductsController,
   getProductsByPage,
   getProductByIdController,
+  getCollections,
+  searchProductsWithSuggestions,
+  getProductsSearchResults,
   updateProductController,
   deleteProductController,
   addReviewController,

@@ -46,7 +46,6 @@ const createOrderController = async (req, res) => {
       cityAndRegion,
       zipCode,
     } = req.body;
-
     if (
       !sourceId ||
       !totalPrice ||
@@ -65,7 +64,7 @@ const createOrderController = async (req, res) => {
     const { result } = await paymentsApi.createPayment({
       sourceId,
       amountMoney: {
-        currency: currency || "GBP",
+        currency: currency,
         amount: Math.floor(totalPrice * 100),
       },
       idempotencyKey: crypto.randomUUID(),
@@ -100,7 +99,7 @@ const createOrderController = async (req, res) => {
       res.status(400).json({ message: "Payment result is invalid." });
     }
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    res.status(400).json({ message: "Payment error, Please try again" });
   }
 };
 

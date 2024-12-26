@@ -44,11 +44,13 @@ const orderSchema = mongoose.Schema(
       required: true,
       default: 0.0,
     },
+
+    guestOrder: { type: Boolean, default: false, required: true },
+    guestEmail: { type: String, required: false },
     paidAt: {
       type: Date,
       required: true,
     },
-
     isDelivered: {
       type: String,
       required: false,
