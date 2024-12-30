@@ -275,7 +275,7 @@ const getOrdersByUserController = async (req, res) => {
       }); // filter by user ID
       res.status(200).json(orders);
     } catch (error) {
-      res.status(500).json({ message: error.message });
+      res.status(500).json({ message: "Error getting orders" });
     }
   } else {
     return res.status(400).json({ message: "User ID is missing or invalid" });
@@ -292,13 +292,33 @@ const getOrdersByGuestController = async (req, res) => {
       createdAt: -1,
     });
     if (!orders.length) {
-      return res
-        .status(404)
-        .json({ message: "No orders found for this email" });
+      return res.status(404).json({ message: "No Previous orders" });
     }
     res.status(200).json(orders);
   } catch (error) {
-    res.status(500).json({ message: "Error fetching orders", error });
+    res.status(500).json({ message: "Error fetching orders" });
+  }
+};
+
+const getOrderByUserController = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const order = await OrderModel.findById(id);
+    if (!order) return res.status(404).json({ message: "Order not found" });
+    res.status(200).json(order);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const getOrderByGuestController = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const order = await OrderModel.findById(id);
+    if (!order) return res.status(404).json({ message: "Order not found" });
+    res.status(200).json(order);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };
 
@@ -313,4 +333,6 @@ export {
   updateOrderStatusController,
   getOrdersByUserController,
   getOrdersByGuestController,
+  getOrderByUserController,
+  getOrderByGuestController,
 };

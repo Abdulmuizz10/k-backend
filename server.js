@@ -9,6 +9,7 @@ import authRoutes from "./routes/authRoutes.js";
 import usersRoutes from "./routes/usersRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
+import subscriberRoutes from "./routes/subscriberRoutes.js";
 
 // express initialization
 const app = express();
@@ -24,6 +25,8 @@ app.use("/auth", authRoutes);
 app.use("/users", usersRoutes);
 app.use("/products", productRoutes);
 app.use("/orders", orderRoutes);
+app.use("/subscribers", subscriberRoutes);
+
 // app.use("/create-payment", paymentRoutes);
 
 //database initialization

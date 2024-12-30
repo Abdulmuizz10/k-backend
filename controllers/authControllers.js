@@ -47,7 +47,7 @@ const signUp = async (req, res) => {
       token,
     });
   } catch (error) {
-    res.status(500).json({ message: `${error}: Something went wrong` });
+    res.status(500).json({ message: "Something went wrong, Please try again" });
   }
 };
 
@@ -88,9 +88,7 @@ const signIn = async (req, res) => {
       token,
     });
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: `${error.message || error}: Something went wrong` });
+    res.status(500).json({ message: "Something went wrong, Please try again" });
   }
 };
 

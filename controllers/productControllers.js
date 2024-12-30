@@ -104,7 +104,12 @@ const searchProductsWithSuggestions = async (req, res) => {
 
     // Query the database for matching products
     const products = await ProductModel.find({
-      $or: [{ name: searchRegex }, { category: searchRegex }],
+      $or: [
+        { name: searchRegex },
+        { category: searchRegex },
+        { subcategory: searchRegex },
+        { type: searchRegex },
+      ],
     }).limit(9);
 
     const suggestions = [
@@ -125,7 +130,11 @@ const getProductsSearchResults = async (req, res) => {
       return res.status(400).json({ message: "Search query is required" });
     }
     const nameRegex = new RegExp(query, "i");
-    const products = await ProductModel.find({ name: nameRegex });
+    // const products = await ProductModel.find({ name: nameRegex });
+
+    const products = await ProductModel.find({
+      $or: [{ name: nameRegex }, { category: nameRegex }],
+    });
 
     if (products.length === 0) {
       return res
