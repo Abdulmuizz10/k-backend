@@ -1,17 +1,20 @@
 // Create a new subscriber
+import { sendSubscribersEmail } from "../lib/utils.js";
 import SubscriberModel from "../models/subscriberModel.js";
 
 const createSubscriber = async (req, res) => {
   const { email } = req.body;
   try {
-    const existingSubscriber = SubscriberModel.find({ email: email });
+    const existingSubscriber = await SubscriberModel.findOne({ email: email });
+
     if (existingSubscriber) {
-      res.status(200).json({ message: "You've already subscribed!" });
-    } else {
-      const subscriber = new SubscriberModel({ email: email });
-      await subscriber.save();
-      res.status(200).json({ message: "Thanks for subscribing!" });
+      return res.status(400).json({ message: "You've already subscribed!" });
     }
+
+    const subscriber = new SubscriberModel(req.body);
+    await subscriber.save();
+
+    res.status(200).json({ message: "Thanks for subscribing!" });
   } catch (error) {
     res.status(500).json({ message: "Something went wrong!" });
   }
@@ -28,23 +31,24 @@ const getAllSubscribers = async (req, res) => {
   }
 };
 
-// const getProductsByPage = async (req, res) => {
-//   try {
-//     const page = parseInt(req.query.page) || 1;
-//     const limit = 20;
-//     const skip = (page - 1) * limit;
+const sendEmailToSubscribers = async (req, res) => {
+  const { subject, message } = req.body;
+  try {
+    const subscribers = await SubscriberModel.find();
+    if (subscribers.length === 0) {
+      return res
+        .status(400)
+        .json({ message: "No subscribers to send emails to." });
+    }
 
-//     const products = await ProductModel.find()
-//       .sort({ createdAt: -1 })
-//       .skip(skip)
-//       .limit(limit);
-//     const totalProducts = await ProductModel.countDocuments();
-//     const totalPages = Math.ceil(totalProducts / limit);
+    const emailList = subscribers.map((subscriber) => subscriber.email);
 
-//     res.status(200).json({ products, totalPages });
-//   } catch (error) {
-//     res.status(500).json({ message: error.message });
-//   }
-// };
+    await sendSubscribersEmail(emailList, subject, message);
 
-export { createSubscriber, getAllSubscribers };
+    res.status(200).json({ message: "Emails sent successfully!" });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to send emails." });
+  }
+};
+
+export { createSubscriber, getAllSubscribers, sendEmailToSubscribers };

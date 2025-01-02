@@ -37,6 +37,10 @@ const productSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    previousPrice: {
+      type: Number,
+      required: false,
+    },
     price: {
       type: Number,
       required: true,

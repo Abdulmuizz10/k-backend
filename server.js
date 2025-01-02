@@ -3,6 +3,7 @@ import bodyParser from "body-parser";
 import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
+import cookieParser from "cookie-parser";
 
 //routes
 import authRoutes from "./routes/authRoutes.js";
@@ -11,6 +12,13 @@ import productRoutes from "./routes/productRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
 import subscriberRoutes from "./routes/subscriberRoutes.js";
 
+const development = false;
+
+const corsOptions = {
+  origin: development ? "http://localhost:5173" : process.env.FRONTEND_URL,
+  credentials: true,
+};
+
 // express initialization
 const app = express();
 
@@ -18,7 +26,8 @@ const app = express();
 dotenv.config();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ limit: "30mb", extended: true }));
-app.use(cors());
+app.use(cors(corsOptions));
+app.use(cookieParser());
 
 //routes declarations
 app.use("/auth", authRoutes);
