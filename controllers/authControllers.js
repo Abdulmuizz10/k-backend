@@ -15,8 +15,8 @@ const createAndSendToken = (user, res) => {
 
   res.cookie("authToken", token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === development, // Enable secure in production
-    sameSite: "strict", // Prevent cross-site request forgery
+    secure: process.env.NODE_ENV === "development",
+    sameSite: process.env.NODE_ENV === "development" ? "none" : "lax",
     maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
   });
 
@@ -135,8 +135,8 @@ const logout = (req, res) => {
     // Clear the authToken cookie
     res.clearCookie("authToken", {
       httpOnly: true,
-      secure: process.env.NODE_ENV === development, // Ensure secure is enabled in production
-      sameSite: "strict", // Matches the setting used during sign-in
+      secure: process.env.NODE_ENV === "development",
+      sameSite: process.env.NODE_ENV === "development" ? "none" : "lax",
     });
 
     res.status(200).json({ message: "Logged out successfully" });

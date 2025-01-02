@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 
 const verifyUser = async (req, res, next) => {
-  const token = req.cookies?.authToken; // Read the token from cookies
+  const token = req.cookies?.authToken;
 
   if (!token) {
     return res.status(401).json({ message: "You are not authenticated" });
