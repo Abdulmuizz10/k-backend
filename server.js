@@ -49,5 +49,3 @@ mongoose
   .catch((error) =>
     console.log(`${error}Server is not connected to port: ${PORT}`)
   );
-
-console.log(process.env.ACCESS_TOKEN);

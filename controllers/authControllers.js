@@ -15,8 +15,8 @@ const createAndSendToken = (user, res) => {
 
   res.cookie("authToken", token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "development",
-    sameSite: process.env.NODE_ENV === "development" ? "none" : "lax",
+    secure: true,
+    sameSite: "none",
     maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
   });
 
@@ -78,7 +78,7 @@ const signIn = async (req, res) => {
       return res.status(400).json({ message: "Incorrect email or password" });
     }
 
-    await sendWelcomeEmail(email, existingUser.firstName, "signin");
+    // await sendWelcomeEmail(email, existingUser.firstName, "signin");
 
     return createAndSendToken(existingUser, res);
   } catch (error) {

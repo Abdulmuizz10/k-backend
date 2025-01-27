@@ -230,25 +230,21 @@ const getOrderByIdController = async (req, res) => {
 
 // Update order to delivered
 const updateOrderStatusController = async (req, res) => {
-  const { status } = req.body; // Get the status from the request body
+  const { status } = req.body;
 
-  // Validate the status against the allowed enum values
   const validStatuses = ["Pending", "Processing", "Shipped", "Delivered"];
   if (!validStatuses.includes(status)) {
     return res.status(400).json({ message: "Invalid status value" });
   }
 
   try {
-    // Find the order by ID
     const order = await OrderModel.findById(req.params.id);
     if (!order) {
       return res.status(404).json({ message: "Order not found" });
     }
 
-    // Update the order status
     order.isDelivered = status;
 
-    // Update the `deliveredAt` field only if status is "Delivered"
     if (status === "Delivered") {
       order.deliveredAt = new Date();
     } else {
@@ -257,10 +253,8 @@ const updateOrderStatusController = async (req, res) => {
 
     // Save the updated order
     await order.save();
-
     res.status(200).json({ message: `Order status updated to ${status}` });
   } catch (error) {
-    console.error("Error updating order status:", error);
     res.status(500).json({ message: "Failed to update order status" });
   }
 };

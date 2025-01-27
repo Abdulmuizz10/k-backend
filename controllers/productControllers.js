@@ -83,7 +83,6 @@ const getCollections = async (req, res) => {
 
     res.status(200).json(products);
   } catch (error) {
-    console.error("Error fetching random products:", error);
     res.status(500).json({
       success: false,
       message: "Failed to fetch random products.",
@@ -129,17 +128,35 @@ const getProductsSearchResults = async (req, res) => {
     if (!query) {
       return res.status(400).json({ message: "Search query is required" });
     }
+
+    // Create a regex for partial matching (case-insensitive)
     const nameRegex = new RegExp(query, "i");
-    // const products = await ProductModel.find({ name: nameRegex });
 
-    const products = await ProductModel.find({
-      $or: [{ name: nameRegex }, { category: nameRegex }],
-    });
+    // Perform the search with relevance scoring based on name matches
+    const products = await ProductModel.aggregate([
+      {
+        $match: {
+          name: nameRegex, // Match products based on the name field
+        },
+      },
+      {
+        $addFields: {
+          relevance: {
+            $cond: [
+              { $regexMatch: { input: "$name", regex: nameRegex } },
+              1,
+              0,
+            ],
+          },
+        },
+      },
+      { $sort: { relevance: -1, name: 1 } }, // Sort by relevance and then alphabetically by name
+    ]);
 
-    if (products.length === 0) {
+    if (!products.length) {
       return res
         .status(404)
-        .json({ message: "No products found with a similar name" });
+        .json({ message: "No products found with a similar name." });
     }
 
     res.status(200).json(products);
