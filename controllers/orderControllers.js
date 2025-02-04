@@ -282,7 +282,7 @@ const getOrdersByGuestController = async (req, res) => {
     return res.status(400).json({ message: "Guest email is required" });
   }
   try {
-    const orders = await OrderModel.find({ email: guest }).sort({
+    const orders = await OrderModel.find({ guestEmail: guest }).sort({
       createdAt: -1,
     });
     if (!orders.length) {

@@ -109,7 +109,7 @@ const searchProductsWithSuggestions = async (req, res) => {
         { subcategory: searchRegex },
         { type: searchRegex },
       ],
-    }).limit(9);
+    }).limit(12);
 
     const suggestions = [
       ...new Set(products.map((product) => product.name)),
