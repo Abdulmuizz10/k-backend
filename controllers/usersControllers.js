@@ -1,3 +1,4 @@
+import OrderModel from "../models/orderModel.js";
 import UserModel from "../models/userModel.js";
 import bcrypt from "bcryptjs";
 
@@ -36,7 +37,8 @@ const findUser = async (req, res) => {
     if (!user) {
       res.status(404).json({ message: "User not found" });
     }
-    res.status(200).json(user);
+    const orders = await OrderModel.find({ user: id });
+    res.status(200).json({ user, orders });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

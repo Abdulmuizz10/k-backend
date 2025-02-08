@@ -15,7 +15,7 @@ const router = express.Router();
 router.get("/", verifyUser, authorizeAdmin, getUsers);
 router.get("/page/users", verifyUser, authorizeAdmin, getUsersByPage);
 router.put("/:id", verifyUser, authorizeAdmin, updateUser);
-router.get("/find/:id", verifyUser, findUser);
+router.get("/find/:id", verifyUser, authorizeAdmin, findUser);
 router.delete("/:id", verifyUser, authorizeAdmin, deleteUser);
 router.get("/profile", verifyUser, getCurrentUserProfile);
 router.patch("/update_profile", verifyUser, updateCurrentUserProfile);
