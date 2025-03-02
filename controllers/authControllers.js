@@ -78,7 +78,7 @@ const signIn = async (req, res) => {
       return res.status(400).json({ message: "Incorrect email or password" });
     }
 
-    await sendWelcomeEmail(email, existingUser.firstName, "signin");
+    // await sendWelcomeEmail(email, existingUser.firstName, "signin");
 
     return createAndSendToken(existingUser, res);
   } catch (error) {

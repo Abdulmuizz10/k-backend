@@ -34,30 +34,8 @@ function convertBigIntToString(obj) {
 
 const createOrderController = async (req, res) => {
   try {
-    const {
-      sourceId,
-      totalPrice,
-      currency,
-      orderedItems,
-      firstName,
-      lastName,
-      email,
-      country,
-      cityAndRegion,
-      zipCode,
-    } = req.body;
-    if (
-      !sourceId ||
-      !totalPrice ||
-      !currency ||
-      !orderedItems ||
-      !firstName ||
-      !lastName ||
-      !email ||
-      !country ||
-      !cityAndRegion ||
-      !zipCode
-    ) {
+    const { sourceId, totalPrice, currency, orderedItems } = req.body;
+    if (!sourceId || !totalPrice || !currency || !orderedItems) {
       return res.status(400).json({ message: "Required fields are missing." });
     }
 
@@ -80,12 +58,12 @@ const createOrderController = async (req, res) => {
 
         // Send confirmation email via utility function
         await sendOrderConfirmationEmail(
-          email,
-          firstName,
-          lastName,
-          totalPrice,
-          currency,
-          orderedItems,
+          savedOrder.email,
+          savedOrder.shippingAddress.firstName,
+          savedOrder.shippingAddress.lastName,
+          savedOrder.totalPrice,
+          savedOrder.currency,
+          savedOrder.orderedItems,
           savedOrder._id
         );
 
@@ -106,8 +84,8 @@ const createOrderController = async (req, res) => {
 const linkGuestOrdersController = async (req, res) => {
   const { user, email } = req.body;
   try {
-    const existingOrder = await userModel.findOne({ email: email });
-    if (existingOrder) {
+    const existingUser = await userModel.findOne({ email: email });
+    if (existingUser) {
       await OrderModel.updateMany({ email }, { user });
       res
         .status(200)
@@ -279,7 +257,7 @@ const getOrdersByUserController = async (req, res) => {
 const getOrdersByGuestController = async (req, res) => {
   const { guest } = req.query;
   if (!guest) {
-    return res.status(400).json({ message: "Guest email is required" });
+    return res.status(400).json({ message: "Guest   required" });
   }
   try {
     const orders = await OrderModel.find({ guestEmail: guest }).sort({
