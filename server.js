@@ -11,6 +11,7 @@ import usersRoutes from "./routes/usersRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
 import subscriberRoutes from "./routes/subscriberRoutes.js";
+import utilityRoutes from "./routes/utilityRoutes.js";
 
 const development = false;
 
@@ -35,12 +36,14 @@ app.use("/users", usersRoutes);
 app.use("/products", productRoutes);
 app.use("/orders", orderRoutes);
 app.use("/subscribers", subscriberRoutes);
+app.use("/utility", utilityRoutes);
 
 // app.use("/create-payment", paymentRoutes);
 
 //database initialization
 const PORT = process.env.PORT || 5000;
 const DATABASE_URL = process.env.MONGO_DB_URL;
+// const DATABASE_URL = process.env.LOCAL_URL;
 mongoose
   .connect(DATABASE_URL)
   .then(() =>
