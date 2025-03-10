@@ -4,12 +4,10 @@ import crypto from "crypto";
 import userModel from "../models/userModel.js";
 import dotenv from "dotenv";
 import { sendOrderConfirmationEmail } from "../lib/utils.js";
-
 dotenv.config();
 
 const { paymentsApi } = new Client({
-  accessToken:
-    "EAAAlywGhqE8hPyat5g4LIzFR_EjHl5_g0tuPABWLKCT_m3BOdq3ElOnG_O3_BFv",
+  accessToken: process.env.SQUARE_ACCESS_TOKEN,
   environment:
     process.env.NODE_ENV === "production"
       ? Environment.Production
@@ -32,41 +30,107 @@ function convertBigIntToString(obj) {
   return obj;
 }
 
+// const createOrderController = async (req, res) => {
+//   try {
+//     const { sourceId, totalPrice, currency, orderedItems } = req.body;
+//     if (!sourceId || !totalPrice || !currency || !orderedItems) {
+//       return res.status(400).json({ message: "Required fields are missing." });
+//     }
+
+//     const { result } = await paymentsApi.createPayment({
+//       sourceId,
+//       amountMoney: {
+//         currency: currency,
+//         amount: Math.floor(totalPrice * 100),
+//       },
+//       idempotencyKey: crypto.randomUUID(),
+//       locationId: process.env.SQUARE_LOCATION_ID,
+//     });
+
+//     if (result) {
+//       try {
+//         const order = new OrderModel(req.body);
+//         const savedOrder = await order.save();
+
+//         const safeResult = convertBigIntToString(result);
+
+//         // Send confirmation email via utility function
+//         await sendOrderConfirmationEmail(
+//           savedOrder.email,
+//           savedOrder.shippingAddress.firstName,
+//           savedOrder.shippingAddress.lastName,
+//           savedOrder.totalPrice,
+//           savedOrder.currency,
+//           savedOrder.orderedItems,
+//           savedOrder._id
+//         );
+
+//         res
+//           .status(200)
+//           .json({ ...savedOrder.toObject(), paymentResult: safeResult });
+//       } catch (error) {
+//         res.status(400).json({ message: error.message });
+//       }
+//     } else {
+//       res.status(400).json({ message: "Payment result is invalid." });
+//     }
+//   } catch (error) {
+//     res.status(400).json({ message: "Payment error, Please try again" });
+//   }
+// };
+
 const createOrderController = async (req, res) => {
   try {
-    const { sourceId, totalPrice, currency, orderedItems } = req.body;
-    if (!sourceId || !totalPrice || !currency || !orderedItems) {
+    const {
+      sourceId,
+      totalPrice,
+      currency,
+      orderedItems,
+      billingAddress,
+      shippingAddress,
+      email,
+    } = req.body;
+
+    const address = billingAddress || shippingAddress;
+
+    if (!sourceId || !totalPrice || !currency || !orderedItems || !address) {
       return res.status(400).json({ message: "Required fields are missing." });
     }
+
+    const { zipCode, addressLineOne, country, state, city } = address;
 
     const { result } = await paymentsApi.createPayment({
       sourceId,
       amountMoney: {
-        currency: currency,
+        currency,
         amount: Math.floor(totalPrice * 100),
       },
       idempotencyKey: crypto.randomUUID(),
       locationId: process.env.SQUARE_LOCATION_ID,
+      billingAddress: {
+        postalCode: zipCode, // Add postal code for AVS checks
+        addressLine1: addressLineOne,
+        locality: city,
+        administrativeDistrictLevel1: state,
+        country,
+      },
+      buyerEmailAddress: email,
     });
 
     if (result) {
       try {
         const order = new OrderModel(req.body);
         const savedOrder = await order.save();
-
         const safeResult = convertBigIntToString(result);
-
-        // Send confirmation email via utility function
         await sendOrderConfirmationEmail(
-          savedOrder.email,
-          savedOrder.shippingAddress.firstName,
-          savedOrder.shippingAddress.lastName,
-          savedOrder.totalPrice,
-          savedOrder.currency,
-          savedOrder.orderedItems,
+          email,
+          shippingAddress.firstName,
+          shippingAddress.lastName,
+          totalPrice,
+          currency,
+          orderedItems,
           savedOrder._id
         );
-
         res
           .status(200)
           .json({ ...savedOrder.toObject(), paymentResult: safeResult });
