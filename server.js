@@ -13,8 +13,9 @@ import orderRoutes from "./routes/orderRoutes.js";
 import subscriberRoutes from "./routes/subscriberRoutes.js";
 import utilityRoutes from "./routes/utilityRoutes.js";
 
-const development = false;
+dotenv.config();
 
+const development = false;
 const corsOptions = {
   origin: development ? "http://localhost:5173" : process.env.FRONTEND_URL,
   credentials: true,
@@ -24,7 +25,7 @@ const corsOptions = {
 const app = express();
 
 //middlewares
-dotenv.config();
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ limit: "30mb", extended: true }));
 app.use(cors(corsOptions));
