@@ -3,8 +3,9 @@ import UserModel from "../models/userModel.js";
 import bcrypt from "bcryptjs";
 import axios from "axios";
 import { sendResetEmailLink, sendWelcomeEmail } from "../lib/utils.js";
+import dotenv from "dotenv";
 
-// const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+dotenv.config();
 
 const createAndSendToken = (user, res) => {
   const token = jwt.sign(
