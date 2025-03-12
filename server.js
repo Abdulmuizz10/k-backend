@@ -15,9 +15,13 @@ import utilityRoutes from "./routes/utilityRoutes.js";
 
 dotenv.config();
 
-const development = false;
+const development = process.env.NODE_ENV === "development";
+
 const corsOptions = {
-  origin: development ? "http://localhost:5173" : process.env.FRONTEND_URL,
+  origin: development
+    ? "http://localhost:5173"
+    : process.env.FRONTEND_URL ||
+      "https://keesdeen-abdulmuizz10s-projects.vercel.app",
   credentials: true,
 };
 
