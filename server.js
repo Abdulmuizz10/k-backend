@@ -18,10 +18,7 @@ dotenv.config();
 const development = process.env.NODE_ENV === "development";
 
 const corsOptions = {
-  origin: development
-    ? "http://localhost:5173"
-    : process.env.FRONTEND_URL ||
-      "https://keesdeen-abdulmuizz10s-projects.vercel.app",
+  origin: development ? "http://localhost:5173" : process.env.FRONTEND_URL,
   credentials: true,
 };
 
