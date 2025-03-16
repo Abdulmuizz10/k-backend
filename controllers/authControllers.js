@@ -136,8 +136,8 @@ const logout = (req, res) => {
     // Clear the authToken cookie
     res.clearCookie("authToken", {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      secure: process.env.NODE_ENV === "development",
+      sameSite: process.env.NODE_ENV === "development" ? "none" : "lax",
     });
 
     res.status(200).json({ message: "Logged out successfully" });
