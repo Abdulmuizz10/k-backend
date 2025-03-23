@@ -30,55 +30,6 @@ function convertBigIntToString(obj) {
   return obj;
 }
 
-// const createOrderController = async (req, res) => {
-//   try {
-//     const { sourceId, totalPrice, currency, orderedItems } = req.body;
-//     if (!sourceId || !totalPrice || !currency || !orderedItems) {
-//       return res.status(400).json({ message: "Required fields are missing." });
-//     }
-
-//     const { result } = await paymentsApi.createPayment({
-//       sourceId,
-//       amountMoney: {
-//         currency: currency,
-//         amount: Math.floor(totalPrice * 100),
-//       },
-//       idempotencyKey: crypto.randomUUID(),
-//       locationId: process.env.SQUARE_LOCATION_ID,
-//     });
-
-//     if (result) {
-//       try {
-//         const order = new OrderModel(req.body);
-//         const savedOrder = await order.save();
-
-//         const safeResult = convertBigIntToString(result);
-
-//         // Send confirmation email via utility function
-//         await sendOrderConfirmationEmail(
-//           savedOrder.email,
-//           savedOrder.shippingAddress.firstName,
-//           savedOrder.shippingAddress.lastName,
-//           savedOrder.totalPrice,
-//           savedOrder.currency,
-//           savedOrder.orderedItems,
-//           savedOrder._id
-//         );
-
-//         res
-//           .status(200)
-//           .json({ ...savedOrder.toObject(), paymentResult: safeResult });
-//       } catch (error) {
-//         res.status(400).json({ message: error.message });
-//       }
-//     } else {
-//       res.status(400).json({ message: "Payment result is invalid." });
-//     }
-//   } catch (error) {
-//     res.status(400).json({ message: "Payment error, Please try again" });
-//   }
-// };
-
 const createOrderController = async (req, res) => {
   try {
     const {
@@ -91,57 +42,78 @@ const createOrderController = async (req, res) => {
       email,
     } = req.body;
 
-    const address = billingAddress || shippingAddress;
-
-    if (!sourceId || !totalPrice || !currency || !orderedItems || !address) {
+    // Validate required fields
+    if (!sourceId || !totalPrice || !currency || !orderedItems || !email) {
       return res.status(400).json({ message: "Required fields are missing." });
     }
 
-    const { zipCode, addressLineOne, country, state, city } = address;
+    const address = billingAddress || shippingAddress;
+    if (
+      !address ||
+      !address.zipCode ||
+      !address.addressLineOne ||
+      !address.country ||
+      !address.state
+    ) {
+      return res
+        .status(400)
+        .json({ message: "Address fields are incomplete." });
+    }
 
-    const { result } = await paymentsApi.createPayment({
-      sourceId,
-      amountMoney: {
-        currency,
-        amount: Math.floor(totalPrice * 100),
-      },
-      idempotencyKey: crypto.randomUUID(),
-      locationId: process.env.SQUARE_LOCATION_ID,
-      billingAddress: {
-        postalCode: zipCode, // Add postal code for AVS checks
-        addressLine1: addressLineOne,
-        locality: city,
-        administrativeDistrictLevel1: state,
-        country,
-      },
-      buyerEmailAddress: email,
-    });
-
-    if (result) {
-      try {
-        const order = new OrderModel(req.body);
-        const savedOrder = await order.save();
-        const safeResult = convertBigIntToString(result);
-        await sendOrderConfirmationEmail(
-          email,
-          shippingAddress.firstName,
-          shippingAddress.lastName,
-          totalPrice,
+    let paymentResult;
+    try {
+      const { result } = await paymentsApi.createPayment({
+        sourceId,
+        amountMoney: {
           currency,
-          orderedItems,
-          savedOrder._id
-        );
-        res
-          .status(200)
-          .json({ ...savedOrder.toObject(), paymentResult: safeResult });
-      } catch (error) {
-        res.status(400).json({ message: error.message });
+          amount: Math.floor(totalPrice * 100),
+        },
+        idempotencyKey: crypto.randomUUID(),
+        locationId: process.env.SQUARE_LOCATION_ID,
+        billingAddress: {
+          postalCode: address.zipCode,
+          addressLine1: address.addressLineOne,
+          administrativeDistrictLevel1: address.state,
+          country: address.country,
+        },
+        buyerEmailAddress: email,
+      });
+
+      if (!result) {
+        return res.status(400).json({ message: "Payment result is invalid." });
       }
-    } else {
-      res.status(400).json({ message: "Payment result is invalid." });
+
+      paymentResult = convertBigIntToString(result);
+    } catch (paymentError) {
+      return res.status(500).json({
+        message: "Payment processing failed.",
+        error: paymentError.message,
+      });
+    }
+
+    try {
+      const order = new OrderModel(req.body);
+      const savedOrder = await order.save();
+
+      await sendOrderConfirmationEmail(
+        email,
+        shippingAddress.firstName,
+        shippingAddress.lastName,
+        totalPrice,
+        currency,
+        orderedItems,
+        savedOrder._id
+      );
+
+      return res.status(200).json({ ...savedOrder.toObject(), paymentResult });
+    } catch (orderError) {
+      return res.status(500).json({
+        message: "Failed to create order.",
+        error: orderError.message,
+      });
     }
   } catch (error) {
-    res.status(400).json({ message: "Payment error, Please try again" });
+    return res.status(500).json({ message: "Internal server error." });
   }
 };
 
