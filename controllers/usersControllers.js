@@ -44,6 +44,21 @@ const findUser = async (req, res) => {
   }
 };
 
+const updateUser = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const newUser = await UserModel.findByIdAndUpdate(id, req.body, {
+      new: true,
+    });
+    if (!user) {
+      res.status(404).json({ message: "User not found" });
+    }
+    res.status(200).json({ newUser });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 const updateToAdmin = async (req, res) => {
   try {
     const { userId } = req.params;
