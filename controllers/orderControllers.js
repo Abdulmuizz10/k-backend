@@ -6,14 +6,6 @@ import dotenv from "dotenv";
 import { sendOrderConfirmationEmail } from "../lib/utils.js";
 dotenv.config();
 
-const { paymentsApi } = new Client({
-  accessToken: process.env.SQUARE_ACCESS_TOKEN,
-  environment:
-    process.env.NODE_ENV === "production"
-      ? Environment.Production
-      : Environment.Sandbox,
-});
-
 function convertBigIntToString(obj) {
   if (typeof obj === "bigint") {
     return obj.toString();
@@ -29,6 +21,16 @@ function convertBigIntToString(obj) {
   }
   return obj;
 }
+
+const squareClient = new Client({
+  accessToken: process.env.SQUARE_ACCESS_TOKEN,
+  environment:
+    process.env.NODE_ENV === "production"
+      ? Environment.Production
+      : Environment.Sandbox,
+});
+
+const paymentsApi = squareClient.paymentsApi;
 
 const createOrderController = async (req, res) => {
   try {
@@ -66,7 +68,7 @@ const createOrderController = async (req, res) => {
         sourceId,
         amountMoney: {
           currency,
-          amount: Math.floor(totalPrice * 100),
+          amount: parseInt(Math.floor(Number(totalPrice) * 100), 10),
         },
         idempotencyKey: crypto.randomUUID(),
         locationId: process.env.SQUARE_LOCATION_ID,

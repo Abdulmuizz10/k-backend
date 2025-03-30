@@ -15,10 +15,8 @@ import utilityRoutes from "./routes/utilityRoutes.js";
 
 dotenv.config();
 
-const development = process.env.NODE_ENV === "development";
-
 const corsOptions = {
-  origin: development ? "http://localhost:5173" : process.env.FRONTEND_URL,
+  origin: process.env.FRONTEND_URL,
   credentials: true,
 };
 
