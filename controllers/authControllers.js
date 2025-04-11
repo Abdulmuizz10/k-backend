@@ -14,11 +14,14 @@ const createAndSendToken = (user, res) => {
     { expiresIn: "30d" }
   );
 
+  const cookieDomain = ".keesdeen.com";
+
   res.cookie("authToken", token, {
     httpOnly: true,
     secure: true,
     sameSite: "None",
-    maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+    maxAge: 30 * 24 * 60 * 60 * 1000,
+    domain: cookieDomain,
   });
 
   return res.status(200).json({
