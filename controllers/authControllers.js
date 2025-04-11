@@ -17,7 +17,7 @@ const createAndSendToken = (user, res) => {
   res.cookie("authToken", token, {
     httpOnly: true,
     secure: true,
-    sameSite: "none",
+    sameSite: "None",
     maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
   });
 
@@ -136,8 +136,8 @@ const logout = (req, res) => {
     // Clear the authToken cookie
     res.clearCookie("authToken", {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "development",
-      sameSite: process.env.NODE_ENV === "development" ? "none" : "lax",
+      secure: true,
+      sameSite: "None",
     });
 
     res.status(200).json({ message: "Logged out successfully" });
